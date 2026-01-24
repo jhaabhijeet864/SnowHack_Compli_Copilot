@@ -107,7 +107,7 @@ We are **Team Strikers**, a group of passionate developers who have successfully
   *Backend Lead*  
   API Development, Database Design, Data Analytics Integration
 
-- **Ritika Sharma** 🎨  
+- **Tarun Bandraj** 🎨  
   *Frontend Lead*  
   User Interface, React Components, Authentication Flow
 
