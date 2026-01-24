@@ -91,9 +91,9 @@ The global market for expense management software is projected to reach **$10 bi
 
 ---
 
-## 👥 Team Strikers
+## 👥 Team Velocity
 
-We are **Team Strikers**, a group of passionate developers who have successfully built and deployed this innovative expense management solution. Meet our team:
+We are **Velocity**, a group of passionate developers who have successfully built and deployed this innovative expense management solution. Meet our team:
 
 - **Vijay Laxmi** 🏆  
   *Team Lead | Project Manager*  
