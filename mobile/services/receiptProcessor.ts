@@ -59,10 +59,12 @@ Respond with JSON like: {"vendor": "...", "date": "...", "amount": "...", "gstin
 
 JSON:`;
 
-  const response = await RunAnywhere.runInference(MODEL_ID, prompt, {
+  const result = await RunAnywhere.generate(prompt, {
     maxTokens: 200,
     temperature: 0.1, // Low temperature for more deterministic output
   });
+
+  const response = result.text;
 
   // Parse the JSON response
   try {
