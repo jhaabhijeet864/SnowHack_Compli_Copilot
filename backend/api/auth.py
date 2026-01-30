@@ -109,6 +109,14 @@ def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
 # Signin endpoint
 @router.post("/signin")
 def signin(user: schemas.UserLogin, db: Session = Depends(get_db)):
+    # Hardcoded admin credentials for manual login
+    ADMIN_ID = "admin"
+    ADMIN_PASSWORD = "CompliCopilot@2026"
+    if user.email == ADMIN_ID and user.password == ADMIN_PASSWORD:
+        # Create a fake admin user object
+        access_token = create_access_token({"sub": ADMIN_ID})
+        return {"access_token": access_token, "token_type": "bearer"}
+
     db_user = db.query(entities.User).filter(entities.User.email == user.email).first()
     if not db_user or not verify_password(user.password, db_user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")

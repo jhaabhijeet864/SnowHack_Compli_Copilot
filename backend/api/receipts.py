@@ -2,19 +2,15 @@
 # from services.ocr import OCRService
 # svc = OCRService()
 # text = svc.extract_text_from_image(receipt_image_path_or_bytes)
-from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, status, Query, Body, Form
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Body
 from api.auth import get_current_firebase_user
 from typing import Dict, List, Any, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func, or_, and_
 from database.session import get_db
 from models.entities import Receipt
-from services.ocr import ocr_service
-from services.parser import ParserService
+from models.schemas import ReceiptV2Create, ReceiptOut
 import uuid
-import io
-import shutil
 from pathlib import Path
 
 router = APIRouter(
@@ -35,62 +31,39 @@ def error_response(code: str, message: str, details: Any = None) -> Dict[str, An
 
 
 # New endpoint for multiple file upload and batch processing
-@router.post("/batch", status_code=status.HTTP_201_CREATED)
+@router.post("/batch", status_code=status.HTTP_201_CREATED, response_model=List[ReceiptOut])
 async def create_receipts_batch(
-    files: List[UploadFile] = File(...),
+    receipts: List[ReceiptV2Create],
     db: Session = Depends(get_db),
     current_user=Depends(get_current_firebase_user)
 ) -> Any:
     """
-    Upload multiple receipt images, run OCR and parser, and return batch results as downloadable file.
+    Accepts a batch of receipt data in JSON format and creates receipt records in the database.
     """
-    allowed_types = {"image/png", "image/jpeg", "image/jpg"}
-    max_size = 10 * 1024 * 1024  # 10 MB per file
-    parser = ParserService()
-    batch_results = []
-    file_paths = []
-    errors = []
+    new_receipts = []
+    for receipt_data in receipts:
+        # Here you might want to associate the receipt with the user
+        # For now, just creating the receipt object
+        new_receipt = Receipt(
+            id=str(uuid.uuid4()),
+            vendor=receipt_data.vendor,
+            date=receipt_data.date,
+            amount=receipt_data.amount,
+            gstin=receipt_data.gstin,
+            filename=receipt_data.filename,
+            mime_type=receipt_data.mime_type,
+            status="processed",  # Or any other default status
+            # user_id=current_user.id # If you add user association
+        )
+        db.add(new_receipt)
+        new_receipts.append(new_receipt)
 
-    for file in files:
-        if not file or not file.filename:
-            errors.append({"filename": None, "error": "No file uploaded"})
-            continue
-        if file.content_type not in allowed_types:
-            errors.append({"filename": file.filename, "error": f"File type {file.content_type} not allowed"})
-            continue
-        try:
-            file.file.seek(0, io.SEEK_END)
-            size = file.file.tell()
-            file.file.seek(0)
-        except Exception:
-            size = 0
-        if size > max_size:
-            errors.append({"filename": file.filename, "error": "File too large"})
-            continue
-        file_path = UPLOADS_DIR / f"{uuid.uuid4()}_{file.filename}"
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-        file_paths.append(str(file_path))
+    db.commit()
+    for r in new_receipts:
+        db.refresh(r) # Refresh to get DB-generated values like timestamps
 
-    # Batch OCR processing
-    from services.ocr import ocr_service
-    extracted_texts = ocr_service.extract_texts_from_images(file_paths)
+    return new_receipts
 
-    for idx, text in enumerate(extracted_texts):
-        try:
-            parsed = parser.parse(text)
-        except Exception as e:
-            parsed = {"error": str(e)}
-        batch_results.append({
-            "filename": files[idx].filename,
-            "ocr_text": text,
-            "parsed": parsed
-        })
-
-    # Generate CSV file from batch results
-    from services.compliance import generate_csv_from_batch
-    csv_path = generate_csv_from_batch(batch_results)
-    return FileResponse(csv_path, filename="receipts_batch.csv", media_type="text/csv")
 
 @router.get("/")
 async def list_receipts(

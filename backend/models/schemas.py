@@ -55,6 +55,12 @@ class ReceiptCreate(ReceiptBase):
     mime_type: Optional[str] = None
 
 
+class ReceiptV2Create(ReceiptBase):
+    """Model for creating a receipt from V2 frontend (JSON payload)."""
+    filename: Optional[str] = None
+    mime_type: Optional[str] = None
+
+
 class ReceiptUpdate(ReceiptBase):
     """Model for updating a receipt (PATCH)."""
     pass
