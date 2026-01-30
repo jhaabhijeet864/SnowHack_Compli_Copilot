@@ -20,18 +20,9 @@
             <div class="dashboard-nav">
                 
                 <a href="upload.html" class="btn-primary glow">Upload New Receipt</a>
-                <div class="user-menu">
-                    <button class="user-avatar" onclick="toggleUserMenu()">
-                        <span class="avatar-text">S</span>
-                    </button>
-                    <div class="user-dropdown" id="user-dropdown">
-                        <a href="profile.html" class="dropdown-item">Profile</a>
-                        <a href="profile.html?tab=settings" class="dropdown-item">Settings</a>
-                        <a href="profile.html?tab=billing" class="dropdown-item">Billing</a>
-                        <hr class="dropdown-divider">
-                        <a href="index.html" class="dropdown-item" onclick="signOut()">Sign Out</a>
-                    </div>
-                </div>
+                <a href="profile.html" class="user-avatar-link" title="Open Profile">
+                    <span class="avatar-text" id="profile-avatar-letter">S</span>
+                </a>
             </div>
         </nav>
     </header>
@@ -207,6 +198,6 @@
         </div>
     </aside>
 
-    <script src="assets/js/main.js"></script>
+    <script type="module" src="assets/js/main.js"></script>
 </body>
 </html>

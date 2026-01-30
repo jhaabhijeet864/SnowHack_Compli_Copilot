@@ -383,7 +383,10 @@ function initAuthPage() {
 
 // Dashboard Initialization
 function initDashboard() {
-    // Existing avatar dropdown
+    // Initialize user avatar with name initial
+    updateAvatarFromFirebase();
+    
+    // Existing avatar dropdown (removed but keeping for reference)
     const userAvatar = document.querySelector('.user-avatar');
     const userDropdown = document.getElementById('user-dropdown');
     if (userAvatar && userDropdown) {
@@ -1228,6 +1231,48 @@ function escapeHtml(s){
     return window.innerWidth < 768 || window.innerHeight < 500;
   }
 })();
+
+// Update Avatar from Firebase
+async function updateAvatarFromFirebase() {
+    const avatarElement = document.getElementById('profile-avatar-letter');
+    if (!avatarElement) {
+        console.warn('Avatar element not found');
+        return;
+    }
+
+    try {
+        // Import Firebase modules
+        const { auth } = await import('./firebase.js');
+        const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js');
+        
+        // Listen for auth state changes
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is logged in
+                const displayName = user.displayName || user.email || 'User';
+                const firstLetter = displayName.charAt(0).toUpperCase();
+                
+                avatarElement.textContent = firstLetter;
+                avatarElement.title = displayName;
+                
+                console.log(`✅ Avatar Updated: "${displayName}" → "${firstLetter}"`);
+            } else {
+                // User is not logged in
+                avatarElement.textContent = 'S';
+                avatarElement.title = 'Profile';
+                console.log('Avatar: User not logged in - showing default');
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error loading Firebase for avatar:', error);
+        avatarElement.textContent = 'S';
+    }
+}
+
+// Old function - kept for backward compatibility
+function initializeUserAvatar() {
+    updateAvatarFromFirebase();
+}
 
 // Ensure global init calls above on DOM ready if you have an init function:
 // If you have initGlobalFeatures(), keep calling it. Otherwise DOMContentLoaded is fine.

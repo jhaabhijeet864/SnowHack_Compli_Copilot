@@ -1,7 +1,6 @@
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-// Only load analytics outside localhost (avoid 403 noise if misconfigured)
-import { getAnalytics } from "firebase/analytics";
+// Firebase SDK via CDN (no bundler needed)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBL8_6nVU2OCwvNRYWqbx4NzD3PgftnFUE",
@@ -16,8 +15,4 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
-if (firebaseConfig.measurementId && location.hostname !== "localhost") {
-  try { getAnalytics(app); } catch(e){ console.warn("Analytics skipped", e); }
-} else {
-  console.info("Skipping Analytics in dev.");
-}
+console.log('✅ Firebase initialized successfully');

@@ -6,28 +6,539 @@
     <title>Profile - CompliCopilot</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="icon" href="assets/img/logo.png" type="image/png">
-    <link rel="shortcut icon" href="assets/img/logo.png" type="image/png">
+    <style>
+        /* Profile Page Specific Styles */
+        .profile-container {
+            position: relative;
+            min-height: 100vh;
+            background: var(--bg-primary);
+        }
+
+        /* Ambient Lighting Effect */
+        .profile-container::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(500px 400px at var(--spot-x, 50%) var(--spot-y, 50%), rgba(0,212,255, 0.15), transparent 70%),
+                radial-gradient(600px 500px at 85% 105%, rgba(0,153,204,0.12), transparent 72%),
+                radial-gradient(400px 300px at 15% 5%, rgba(0,212,255,0.1), transparent 78%);
+            filter: blur(80px);
+            opacity: 0.6;
+            z-index: 0;
+            animation: ambientMove 8s ease-in-out infinite;
+        }
+
+        @keyframes ambientMove {
+            0%, 100% {
+                --spot-x: 50%;
+                --spot-y: 50%;
+                filter: blur(80px);
+                opacity: 0.6;
+            }
+            50% {
+                --spot-x: 60%;
+                --spot-y: 40%;
+                filter: blur(100px);
+                opacity: 0.7;
+            }
+        }
+
+        .profile-wrapper {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Profile Header Card */
+        .profile-header {
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 24px;
+            padding: 3rem 2rem;
+            margin: 2rem auto;
+            max-width: 900px;
+            box-shadow: 0 20px 60px rgba(0, 212, 255, 0.15);
+        }
+
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: 24px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(0,212,255,0.3), rgba(0,153,204,0.1));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Avatar Container */
+        .profile-avatar-section {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .profile-avatar-wrapper {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .profile-avatar {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 56px;
+            font-weight: 700;
+            color: white;
+            border: 3px solid rgba(0, 212, 255, 0.3);
+            box-shadow: 
+                0 0 40px rgba(0, 212, 255, 0.4),
+                inset 0 0 20px rgba(255, 255, 255, 0.1);
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .profile-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 
+                0 0 60px rgba(0, 212, 255, 0.6),
+                inset 0 0 20px rgba(255, 255, 255, 0.15);
+            border-color: rgba(0, 212, 255, 0.5);
+        }
+
+        .profile-avatar::after {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            border: 2px solid rgba(0, 212, 255, 0.2);
+            animation: avatarPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes avatarPulse {
+            0%, 100% {
+                opacity: 0;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.15);
+            }
+        }
+
+        .avatar-upload-hint {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 35px;
+            height: 35px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+            transition: all 0.3s ease;
+            border: 2px solid var(--bg-secondary);
+        }
+
+        .avatar-upload-hint:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.5);
+        }
+
+        /* User Info Section */
+        .profile-info {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .profile-name {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-email {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .profile-stats {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        /* Tabs Navigation */
+        .profile-tabs {
+            display: flex;
+            gap: 1rem;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+            margin: 2rem 0;
+            padding-bottom: 1rem;
+            overflow-x: auto;
+            flex-wrap: wrap;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .profile-tab {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .profile-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .profile-tab.active {
+            color: var(--accent-primary);
+            border-bottom-color: var(--accent-primary);
+        }
+
+        .profile-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1rem;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent-gradient);
+            border-radius: 1px;
+        }
+
+        /* Tab Content */
+        .profile-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .profile-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* History Section */
+        .history-container {
+            display: grid;
+            gap: 1rem;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .history-item {
+            background: rgba(36, 36, 36, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .history-item:hover {
+            background: rgba(36, 36, 36, 0.8);
+            border-color: rgba(0, 212, 255, 0.3);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .history-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.8rem;
+            gap: 1rem;
+        }
+
+        .history-vendor {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 15px;
+        }
+
+        .history-amount {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .history-date {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .history-category {
+            display: inline-block;
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent-primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Settings Form */
+        .settings-form {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+            background: rgba(26, 26, 26, 0.8);
+        }
+
+        /* Button Styles */
+        .btn-save {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+            font-size: 14px;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-save:active {
+            transform: translateY(0);
+        }
+
+        .btn-logout {
+            background: rgba(255, 71, 87, 0.1);
+            color: var(--error);
+            border: 1px solid var(--error);
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 71, 87, 0.2);
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.2);
+        }
+
+        /* Profile Badge */
+        .profile-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--success);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .profile-badge::before {
+            content: '✓';
+            font-weight: 700;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .profile-header {
+                padding: 2rem 1.5rem;
+            }
+
+            .profile-avatar {
+                width: 100px;
+                height: 100px;
+                font-size: 40px;
+            }
+
+            .profile-avatar-section {
+                gap: 1.5rem;
+            }
+
+            .profile-name {
+                font-size: 22px;
+            }
+
+            .profile-stats {
+                gap: 1.5rem;
+            }
+
+            .stat-value {
+                font-size: 20px;
+            }
+
+            .history-item-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .history-amount {
+                font-size: 16px;
+            }
+
+            .profile-tabs {
+                gap: 0.5rem;
+            }
+
+            .profile-tab {
+                padding: 0.5rem 0.75rem;
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .profile-header {
+                padding: 1.5rem 1rem;
+            }
+
+            .profile-avatar {
+                width: 80px;
+                height: 80px;
+                font-size: 32px;
+            }
+
+            .profile-name {
+                font-size: 18px;
+            }
+
+            .profile-stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
     <header class="header dashboard-header">
         <nav class="nav">
             <div class="nav-brand">
-                <a href="dashboard.html">
-                    <img src="assets/img/logo.png" alt="CompliCopilot" class="logo">
-                    <span class="brand-name">CompliCopilot</span>
-                </a>
+                <img src="assets/img/logo.png" alt="CompliCopilot" class="logo">
+                <span class="brand-name">CompliCopilot</span>
             </div>
             <div class="dashboard-nav">
-                <a href="dashboard.html" class="btn-secondary">← Back to Dashboard</a>
+                <a href="upload.html" class="btn-primary glow">Upload New Receipt</a>
                 <div class="user-menu">
                     <button class="user-avatar" onclick="toggleUserMenu()">
-                        <span class="avatar-text" id="avatar-initial">U</span>
+                        <span class="avatar-text" id="avatar-letter">S</span>
                     </button>
                     <div class="user-dropdown" id="user-dropdown">
-                        <a href="profile.html" class="dropdown-item active">Profile</a>
-                        <a href="#" class="dropdown-item" onclick="editProfile()">Edit Profile</a>
-                        <a href="#" class="dropdown-item">Settings</a>
+                        <a href="profile.html" class="dropdown-item">Profile</a>
+                        <a href="profile.html?tab=settings" class="dropdown-item">Settings</a>
+                        <a href="profile.html?tab=history" class="dropdown-item">History</a>
                         <hr class="dropdown-divider">
                         <a href="index.html" class="dropdown-item" onclick="signOut()">Sign Out</a>
                     </div>
@@ -36,150 +547,141 @@
         </nav>
     </header>
 
-    <!-- Main Content -->
-    <main class="dashboard">
-        <div class="container">
-            <!-- Profile Section -->
-            <section class="profile-section">
+    <!-- Profile Container -->
+    <div class="profile-container">
+        <div class="profile-wrapper">
+            <main class="container">
+                <!-- Profile Header Card -->
                 <div class="profile-header">
-                    <div class="profile-avatar-large">
-                        <span class="avatar-text-large" id="avatar-large">U</span>
-                    </div>
-                    <div class="profile-info">
-                        <h1 id="profile-name">User Name</h1>
-                        <p id="profile-email" class="profile-email">user@example.com</p>
-                        <p id="profile-company" class="profile-company">Company Name</p>
-                        <div class="profile-stats">
-                            <div class="stat">
-                                <span class="stat-number" id="stat-receipts">0</span>
-                                <span class="stat-label">Receipts</span>
+                    <div class="profile-avatar-section">
+                        <div class="profile-avatar-wrapper">
+                            <div class="profile-avatar" id="profile-avatar">A</div>
+                            <div class="avatar-upload-hint" id="avatar-upload-btn" title="Upload Profile Picture">📷</div>
+                        </div>
+                        <div class="profile-info">
+                            <div class="profile-name">
+                                <span id="profile-name">Abhijeet Kumar</span>
+                                <span class="profile-badge" id="verified-badge" style="display: none;"></span>
                             </div>
-                            <div class="stat">
-                                <span class="stat-number" id="stat-total-amount">$0</span>
-                                <span class="stat-label">Total Amount</span>
+                            <div class="profile-email" id="profile-email">user@example.com</div>
+                            <div class="profile-stats">
+                                <div class="stat-item">
+                                    <div class="stat-value" id="stat-receipts">0</div>
+                                    <div class="stat-label">Receipts</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="stat-total">₹0</div>
+                                    <div class="stat-label">Total Spent</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="stat-saved">0h</div>
+                                    <div class="stat-label">Time Saved</div>
+                                </div>
                             </div>
-                            <div class="stat">
-                                <span class="stat-number" id="stat-member-since">-</span>
-                                <span class="stat-label">Member Since</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="profile-tabs">
+                    <button class="profile-tab active" onclick="switchTab('overview')">Overview</button>
+                    <button class="profile-tab" onclick="switchTab('history')">Receipt History</button>
+                    <button class="profile-tab" onclick="switchTab('settings')">Settings</button>
+                </div>
+
+                <!-- Tab: Overview -->
+                <div id="tab-overview" class="profile-content active">
+                    <div class="profile-header" style="margin-top: 1rem;">
+                        <h2 style="color: var(--text-primary); margin-bottom: 1rem;">Welcome back, <span id="welcome-name">Abhijeet</span>! 👋</h2>
+                        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Here's a quick summary of your CompliCopilot activity.</p>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                            <div class="history-item">
+                                <div style="font-size: 24px; margin-bottom: 0.5rem;">📊</div>
+                                <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 0.5rem;">Monthly Total</div>
+                                <div style="font-size: 24px; font-weight: 700; color: var(--accent-primary);" id="monthly-total">₹0</div>
+                            </div>
+                            <div class="history-item">
+                                <div style="font-size: 24px; margin-bottom: 0.5rem;">⏱️</div>
+                                <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 0.5rem;">Processing Time</div>
+                                <div style="font-size: 24px; font-weight: 700; color: var(--accent-primary);" id="processing-time">0s</div>
+                            </div>
+                            <div class="history-item">
+                                <div style="font-size: 24px; margin-bottom: 0.5rem;">✅</div>
+                                <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 0.5rem;">Categorized</div>
+                                <div style="font-size: 24px; font-weight: 700; color: var(--success);" id="categorized-count">0</div>
                             </div>
                         </div>
                     </div>
-                    <button class="btn-primary edit-profile-btn" onclick="editProfile()">Edit Profile</button>
                 </div>
-            </section>
 
-            <!-- Tabs Navigation -->
-            <section class="profile-tabs">
-                <button class="tab-btn active" data-tab="history">📋 History</button>
-                <button class="tab-btn" data-tab="settings">⚙️ Settings</button>
-                <button class="tab-btn" data-tab="billing">💳 Billing</button>
-            </section>
-
-            <!-- History Tab -->
-            <section class="tab-content active" id="history-tab">
-                <div class="section-header">
-                    <h2>Receipt History</h2>
-                    <div class="history-filters">
-                        <input type="search" id="history-search" placeholder="Search by vendor...">
-                        <select id="history-filter" class="filter-select">
-                            <option value="">All Statuses</option>
-                            <option value="completed">Completed</option>
-                            <option value="pending">Pending</option>
-                            <option value="failed">Failed</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="history-list" id="history-list">
-                    <div class="loading-spinner" style="text-align: center; padding: 40px;">
-                        <p>Loading history...</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Settings Tab -->
-            <section class="tab-content" id="settings-tab">
-                <div class="section-header">
-                    <h2>Account Settings</h2>
-                </div>
-                <div class="settings-group">
-                    <div class="setting-item">
-                        <div class="setting-label">
-                            <h3>Email Notifications</h3>
-                            <p>Receive notifications about your receipts</p>
+                <!-- Tab: History -->
+                <div id="tab-history" class="profile-content">
+                    <div class="profile-header">
+                        <h2 style="color: var(--text-primary); margin-bottom: 1.5rem;">Receipt History</h2>
+                        <div class="history-container" id="history-list">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📋</div>
+                                <p>No receipts yet. <a href="upload.html" style="color: var(--accent-primary); text-decoration: none;">Upload your first receipt</a> to get started!</p>
+                            </div>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="notification-email" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="setting-item">
-                        <div class="setting-label">
-                            <h3>Two-Factor Authentication</h3>
-                            <p>Add extra security to your account</p>
-                        </div>
-                        <button class="btn-secondary" onclick="enable2FA()">Enable 2FA</button>
-                    </div>
-                    <div class="setting-item">
-                        <div class="setting-label">
-                            <h3>Download Your Data</h3>
-                            <p>Export all your data in JSON format</p>
-                        </div>
-                        <button class="btn-secondary" onclick="downloadData()">Download</button>
                     </div>
                 </div>
-            </section>
 
-            <!-- Billing Tab -->
-            <section class="tab-content" id="billing-tab">
-                <div class="section-header">
-                    <h2>Billing Information</h2>
-                </div>
-                <div class="billing-info">
-                    <div class="billing-card">
-                        <h3>Current Plan</h3>
-                        <p class="plan-name" id="current-plan">Free Trial</p>
-                        <p class="plan-description" id="plan-description">Unlimited receipts • 30 day free trial</p>
-                        <button class="btn-primary" onclick="upgradePlan()">Upgrade Plan</button>
-                    </div>
-                    <div class="billing-card">
-                        <h3>Payment Method</h3>
-                        <p id="payment-method">No payment method on file</p>
-                        <button class="btn-secondary" onclick="addPaymentMethod()">Add Payment Method</button>
-                    </div>
-                </div>
-            </section>
-        </div>
-    </main>
+                <!-- Tab: Settings -->
+                <div id="tab-settings" class="profile-content">
+                    <div class="profile-header">
+                        <h2 style="color: var(--text-primary); margin-bottom: 1.5rem;">Account Settings</h2>
+                        <form class="settings-form" onsubmit="saveSettings(event)">
+                            <div class="form-group">
+                                <label for="settings-name">Full Name</label>
+                                <input type="text" id="settings-name" placeholder="Your full name" required>
+                            </div>
 
-    <!-- Edit Profile Modal -->
-    <div id="edit-profile-modal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="modal-close" onclick="closeEditProfile()">&times;</span>
-            <h2>Edit Profile</h2>
-            <form id="edit-profile-form">
-                <div class="form-group">
-                    <label for="edit-name">Full Name</label>
-                    <input type="text" id="edit-name" required>
+                            <div class="form-group">
+                                <label for="settings-email">Email</label>
+                                <input type="email" id="settings-email" placeholder="your@email.com" disabled style="opacity: 0.6;">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="settings-company">Company Name</label>
+                                <input type="text" id="settings-company" placeholder="Your company name">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="settings-gstin">GSTIN Number (Optional)</label>
+                                <input type="text" id="settings-gstin" placeholder="e.g., 27ABCDE1234F1Z5" pattern="^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="settings-phone">Phone Number</label>
+                                <input type="tel" id="settings-phone" placeholder="+91 XXXXX XXXXX">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="settings-theme">Theme Preference</label>
+                                <select id="settings-theme">
+                                    <option value="dark">Dark Mode (Default)</option>
+                                    <option value="light">Light Mode</option>
+                                </select>
+                            </div>
+
+                            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                                <button type="submit" class="btn-save">Save Changes</button>
+                                <button type="button" class="btn-logout" onclick="logoutUser()">Sign Out</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="edit-company">Company Name</label>
-                    <input type="text" id="edit-company" required>
-                </div>
-                <div class="form-group">
-                    <label for="edit-phone">Phone Number</label>
-                    <input type="tel" id="edit-phone">
-                </div>
-                <div class="form-group">
-                    <label for="edit-address">Address</label>
-                    <input type="text" id="edit-address">
-                </div>
-                <button type="submit" class="btn-primary">Save Changes</button>
-            </form>
+            </main>
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script type="module" src="js/profile.js"></script>
+    <!-- Hidden file input for avatar upload -->
+    <input type="file" id="avatar-file-input" style="display: none;" accept="image/*">
+
+    <!-- Firebase Scripts -->
+    <script type="module" src="assets/js/firebase.js"></script>
+    <script type="module" src="assets/js/profile.js"></script>
 </body>
 </html>
