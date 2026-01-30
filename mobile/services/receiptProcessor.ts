@@ -1,4 +1,4 @@
-import TextRecognition from '@react-native-ml-kit/text-recognition';
+import { File } from 'expo-file-system';
 import { RunAnywhere } from '@runanywhere/core';
 
 export interface ReceiptData {
@@ -13,12 +13,48 @@ export type DownloadProgressCallback = (progress: number) => void;
 
 const MODEL_ID = 'lfm2-350m-q8_0';
 
+// TODO: Replace with your Google Cloud Vision API key.
+const GOOGLE_VISION_API_KEY = 'YOUR_API_KEY_HERE';
+
 /**
- * Performs OCR on an image to extract text
+ * Performs OCR using Google Cloud Vision API
  */
 export async function performOCR(imageUri: string): Promise<string> {
-  const result = await TextRecognition.recognize(imageUri);
-  return result.text;
+  // Read image as base64 using new File API
+  const file = new File(imageUri);
+  const arrayBuffer = await file.arrayBuffer();
+  const base64 = btoa(
+    new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
+  );
+
+  // Call Google Cloud Vision API
+  const response = await fetch(
+    `https://vision.googleapis.com/v1/images:annotate?key=${GOOGLE_VISION_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        requests: [{
+          image: { content: base64 },
+          features: [{ type: 'TEXT_DETECTION', maxResults: 1 }],
+        }],
+      }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (data.error) {
+    throw new Error(data.error.message || 'Google Vision API error');
+  }
+
+  const text = data.responses?.[0]?.fullTextAnnotation?.text || '';
+
+  if (!text) {
+    throw new Error('No text detected in image');
+  }
+
+  return text;
 }
 
 /**
@@ -95,7 +131,7 @@ JSON:`;
 }
 
 /**
- * Full pipeline: OCR + LLM parsing
+ * Full pipeline: Cloud OCR + LLM parsing
  */
 export async function processReceipt(
   imageUri: string,
@@ -104,7 +140,7 @@ export async function processReceipt(
   // Step 1: Ensure model is ready
   await ensureModelReady(onProgress);
 
-  // Step 2: Perform OCR
+  // Step 2: Perform OCR using Google Cloud Vision
   const rawText = await performOCR(imageUri);
   console.log('OCR Result:', rawText);
 
@@ -113,6 +149,29 @@ export async function processReceipt(
   }
 
   // Step 3: Parse with LLM
+  const parsed = await parseReceiptText(rawText);
+
+  return {
+    ...parsed,
+    rawText,
+  };
+}
+
+/**
+ * Parse text directly without OCR (for manual input or testing)
+ */
+export async function parseTextDirectly(
+  rawText: string,
+  onProgress?: DownloadProgressCallback
+): Promise<ReceiptData> {
+  // Step 1: Ensure model is ready
+  await ensureModelReady(onProgress);
+
+  if (!rawText.trim()) {
+    throw new Error('No text provided');
+  }
+
+  // Step 2: Parse with LLM
   const parsed = await parseReceiptText(rawText);
 
   return {
