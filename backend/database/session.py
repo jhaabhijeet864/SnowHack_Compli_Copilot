@@ -6,17 +6,22 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 
-# Database URL (env with sane default for local/dev)
+# Database URL (env with sane default for local/dev - using SQLite)
 DATABASE_URL = os.environ.get(
     "DATABASE_URL",
-    "postgresql+psycopg2://user:password@localhost:5432/complicopilot",
+    "sqlite:///./complicopilot.db",
 )
 
-# Engine config
+# Engine config - adjust for SQLite vs PostgreSQL
+connect_args = {}
+if DATABASE_URL.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
+
 engine = create_engine(
     DATABASE_URL,
-    pool_pre_ping=True,
+    pool_pre_ping=True if not DATABASE_URL.startswith("sqlite") else False,
     future=True,
+    connect_args=connect_args,
 )
 
 # Session factory
