@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - CompliCopilot</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="icon" href="assets/img/logo.png" type="image/png">
+    <link rel="shortcut icon" href="assets/img/logo.png" type="image/png">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header dashboard-header">
+        <nav class="nav">
+            <div class="nav-brand">
+                <a href="dashboard.html">
+                    <img src="assets/img/logo.png" alt="CompliCopilot" class="logo">
+                    <span class="brand-name">CompliCopilot</span>
+                </a>
+            </div>
+            <div class="dashboard-nav">
+                <a href="dashboard.html" class="btn-secondary">← Back to Dashboard</a>
+                <div class="user-menu">
+                    <button class="user-avatar" onclick="toggleUserMenu()">
+                        <span class="avatar-text" id="avatar-initial">U</span>
+                    </button>
+                    <div class="user-dropdown" id="user-dropdown">
+                        <a href="profile.html" class="dropdown-item active">Profile</a>
+                        <a href="#" class="dropdown-item" onclick="editProfile()">Edit Profile</a>
+                        <a href="#" class="dropdown-item">Settings</a>
+                        <hr class="dropdown-divider">
+                        <a href="index.html" class="dropdown-item" onclick="signOut()">Sign Out</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard">
+        <div class="container">
+            <!-- Profile Section -->
+            <section class="profile-section">
+                <div class="profile-header">
+                    <div class="profile-avatar-large">
+                        <span class="avatar-text-large" id="avatar-large">U</span>
+                    </div>
+                    <div class="profile-info">
+                        <h1 id="profile-name">User Name</h1>
+                        <p id="profile-email" class="profile-email">user@example.com</p>
+                        <p id="profile-company" class="profile-company">Company Name</p>
+                        <div class="profile-stats">
+                            <div class="stat">
+                                <span class="stat-number" id="stat-receipts">0</span>
+                                <span class="stat-label">Receipts</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number" id="stat-total-amount">$0</span>
+                                <span class="stat-label">Total Amount</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number" id="stat-member-since">-</span>
+                                <span class="stat-label">Member Since</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-primary edit-profile-btn" onclick="editProfile()">Edit Profile</button>
+                </div>
+            </section>
+
+            <!-- Tabs Navigation -->
+            <section class="profile-tabs">
+                <button class="tab-btn active" data-tab="history">📋 History</button>
+                <button class="tab-btn" data-tab="settings">⚙️ Settings</button>
+                <button class="tab-btn" data-tab="billing">💳 Billing</button>
+            </section>
+
+            <!-- History Tab -->
+            <section class="tab-content active" id="history-tab">
+                <div class="section-header">
+                    <h2>Receipt History</h2>
+                    <div class="history-filters">
+                        <input type="search" id="history-search" placeholder="Search by vendor...">
+                        <select id="history-filter" class="filter-select">
+                            <option value="">All Statuses</option>
+                            <option value="completed">Completed</option>
+                            <option value="pending">Pending</option>
+                            <option value="failed">Failed</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="history-list" id="history-list">
+                    <div class="loading-spinner" style="text-align: center; padding: 40px;">
+                        <p>Loading history...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Tab -->
+            <section class="tab-content" id="settings-tab">
+                <div class="section-header">
+                    <h2>Account Settings</h2>
+                </div>
+                <div class="settings-group">
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Email Notifications</h3>
+                            <p>Receive notifications about your receipts</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="notification-email" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Two-Factor Authentication</h3>
+                            <p>Add extra security to your account</p>
+                        </div>
+                        <button class="btn-secondary" onclick="enable2FA()">Enable 2FA</button>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <h3>Download Your Data</h3>
+                            <p>Export all your data in JSON format</p>
+                        </div>
+                        <button class="btn-secondary" onclick="downloadData()">Download</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Billing Tab -->
+            <section class="tab-content" id="billing-tab">
+                <div class="section-header">
+                    <h2>Billing Information</h2>
+                </div>
+                <div class="billing-info">
+                    <div class="billing-card">
+                        <h3>Current Plan</h3>
+                        <p class="plan-name" id="current-plan">Free Trial</p>
+                        <p class="plan-description" id="plan-description">Unlimited receipts • 30 day free trial</p>
+                        <button class="btn-primary" onclick="upgradePlan()">Upgrade Plan</button>
+                    </div>
+                    <div class="billing-card">
+                        <h3>Payment Method</h3>
+                        <p id="payment-method">No payment method on file</p>
+                        <button class="btn-secondary" onclick="addPaymentMethod()">Add Payment Method</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Edit Profile Modal -->
+    <div id="edit-profile-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeEditProfile()">&times;</span>
+            <h2>Edit Profile</h2>
+            <form id="edit-profile-form">
+                <div class="form-group">
+                    <label for="edit-name">Full Name</label>
+                    <input type="text" id="edit-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-company">Company Name</label>
+                    <input type="text" id="edit-company" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-phone">Phone Number</label>
+                    <input type="tel" id="edit-phone">
+                </div>
+                <div class="form-group">
+                    <label for="edit-address">Address</label>
+                    <input type="text" id="edit-address">
+                </div>
+                <button type="submit" class="btn-primary">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/profile.js"></script>
+</body>
+</html>
